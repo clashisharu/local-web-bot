@@ -11,6 +11,10 @@ This project demonstrates how to deploy a local LLM, stream responses via Server
 - JSON logging of generated code blocks (`generated_code.json`)
 - Markdown-formatted responses for compatibility with `marked.js`
 
+## Preview UI
+![Preview](images/image.png)
+This is the current UI rendered in a browser.
+
 ## Tech Stack
 - **Backend:** Python, Flask
 - **LLM Integration:** GPT4All (local deployment)
