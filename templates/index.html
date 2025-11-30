@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>GPT4All Chat</title>
+  <link rel="stylesheet" href="./static/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+</head>
+<body>
+  <div class="container">
+    <h1>GPT4All Chat</h1>
+
+    <div id="chat-window"></div>
+
+    <form id="chat-form">
+      <input id="prompt" type="text" placeholder="Type your message..." autocomplete="off" />
+      <button type="submit">Send</button>
+    </form>
+
+    <div class="params">
+      <label>Max tokens: <input id="maxTokens" type="number" value="500" min="1" max="2048"></label>
+      <label>Temperature: <input id="temp" type="number" step="0.1" value="0.7" min="0" max="1"></label>
+      <label>Top-p: <input id="topP" type="number" step="0.1" value="0.9" min="0" max="1"></label>
+    </div>
+  </div>
+
+  <!-- include JS libraries in your HTML -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+  
+  <script src="./static/app.js"></script>
+</body>
+</html>
