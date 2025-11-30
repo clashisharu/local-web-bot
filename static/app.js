@@ -19,8 +19,11 @@ const loadModelBtn = document.getElementById("loadModelBtn");
 
 const statusDiv = document.getElementById("status");
 
-let currentModel = null;   // track which model is active
+let currentModel = null;
 let modelLoaded = false;
+
+// --- Generate a session_id for this client ---
+const sessionId = "sess-" + Math.random().toString(36).substring(2, 10);
 
 // --- Load available models into dropdown ---
 fetch("/models")
@@ -40,16 +43,15 @@ loadModelBtn.addEventListener("click", () => {
   if (!selectedModel) return alert("Please select a model.");
   appendMessage(statusDiv, "System", `Loading model "${selectedModel}"...`, false, true);
 
-  // check if same model is already loaded
   if (modelLoaded && currentModel === selectedModel) {
     appendMessage(statusDiv, "System", `Model "${selectedModel}" is already loaded.`, false, true);
-    return; // stop here, no need to reload
+    return;
   }
 
   fetch("/select_model", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ model: selectedModel })
+    body: JSON.stringify({ session_id: sessionId, model: selectedModel })
   })
     .then(res => res.json())
     .then(data => {
@@ -58,21 +60,18 @@ loadModelBtn.addEventListener("click", () => {
       } else {
         appendMessage(statusDiv, "System", data.message, false, true);
         modelLoaded = true;
-        currentModel = selectedModel; // update tracker
+        currentModel = selectedModel;
       }
     });
 });
 
-
 // --- Append messages ---
 function appendMessage(targetElement, role, text, isMarkdown = false, clear = false) {
   const tempdiv = document.createElement("div");
-  if (clear) {
-    targetElement.innerHTML = "";
-  }
-  if (targetElement === chatWindow ) {
-    tempdiv.className = `msg ${role}`;
+  if (clear) targetElement.innerHTML = "";
 
+  if (targetElement === chatWindow) {
+    tempdiv.className = `msg ${role}`;
     if (isMarkdown) {
       tempdiv.innerHTML = `<strong>${role}:</strong><div class="content">${marked.parse(text)}</div>`;
     } else {
@@ -86,7 +85,6 @@ function appendMessage(targetElement, role, text, isMarkdown = false, clear = fa
   targetElement.scrollTop = targetElement.scrollHeight;
 }
 
-
 // --- Chat form submit ---
 chatForm.addEventListener("submit", (e) => {
   e.preventDefault();
@@ -98,35 +96,36 @@ chatForm.addEventListener("submit", (e) => {
   const prompt = promptInput.value.trim();
   if (!prompt) return;
 
-  appendMessage(chatWindow,"You", prompt);
+  appendMessage(chatWindow, "You", prompt);
   promptInput.value = "";
 
   const maxTokens = parseInt(maxTokensInput.value, 10);
   const temp = parseFloat(tempInput.value);
   const topP = parseFloat(topPInput.value);
 
-  // Open SSE stream
-  const eventSource = new EventSource(
-    `/stream?prompt=${encodeURIComponent(prompt)}&max_tokens=${maxTokens}&temp=${temp}&top_p=${topP}`
-  );
+  // Open SSE stream with session_id
+  const params = new URLSearchParams({
+    session_id: sessionId,
+    prompt,
+    max_tokens: maxTokens,
+    temp,
+    top_p: topP
+  });
+
+  const eventSource = new EventSource(`/stream?${params.toString()}`);
 
   let buffer = "";
   eventSource.onmessage = (event) => {
     if (event.data === "[PROCESSING]") {
-      appendMessage(chatWindow,"Assistant", "Thinking...");
+      appendMessage(chatWindow, "Assistant", "Thinking...");
       return;
     }
-
     if (event.data === "[DONE]") {
       console.log("Stream finished.");
       eventSource.close();
       return;
     }
-
-    // Otherwise it's a base64 chunk
     const chunk = atob(event.data);
-    console.log("Received chunk:", JSON.stringify(chunk));
-
     buffer += chunk;
     const last = chatWindow.querySelector(".msg.Assistant:last-child");
     if (last) {
@@ -136,14 +135,13 @@ chatForm.addEventListener("submit", (e) => {
 
   eventSource.onerror = () => {
     eventSource.close();
+    appendMessage(chatWindow, "System", "Stream error or session limit reached.", false);
   };
 });
 
-
+// --- File manager ---
 const fileList = document.getElementById("fileList");
 const refreshFilesBtn = document.getElementById("refreshFiles");
-const commandInput = document.getElementById("commandInput");
-const runCommandBtn = document.getElementById("runCommandBtn");
 const commandOutput = document.getElementById("commandOutput");
 
 function refreshFiles() {
@@ -155,38 +153,25 @@ function refreshFiles() {
         data.files.forEach(f => {
           const li = document.createElement("li");
           li.textContent = `${f.name} (${f.size} bytes)`;
-
           const runBtn = document.createElement("button");
           runBtn.textContent = "Run";
           runBtn.style.marginLeft = "0.5rem";
           runBtn.addEventListener("click", () => runFile(f.name));
-
           li.appendChild(runBtn);
           fileList.appendChild(li);
         });
       }
     });
 }
-
 refreshFiles();
 
 function renderExecutionResult({ stdout = "", stderr = "", returncode }, filename) {
   const ts = new Date().toLocaleString();
   const isError = !!stderr.trim() || returncode !== 0;
-
-  // Build formatted text with explicit sections
   const text =
-    `Running: ${filename}\n` +
-    `Time: ${ts}\n` +
-    `\nSTDOUT:\n${stdout || "(no output)"}\n` +
-    `\nSTDERR:\n${stderr || "(no errors)"}\n` +
-    `\nReturn code: ${returncode}\n`;
-
-  // Apply class for success or error
+    `Running: ${filename}\nTime: ${ts}\n\nSTDOUT:\n${stdout || "(no output)"}\n\nSTDERR:\n${stderr || "(no errors)"}\n\nReturn code: ${returncode}\n`;
   commandOutput.classList.toggle("exec-error", isError);
   commandOutput.classList.toggle("exec-success", !isError);
-
-  // Write the text
   commandOutput.textContent = text;
 }
 
@@ -203,8 +188,9 @@ function runFile(filename) {
     });
 }
 
-
 refreshFilesBtn.addEventListener("click", refreshFiles);
+
+// --- Sidebar toggle ---
 const sidebar = document.getElementById("sidebar");
 const openSidebarBtn = document.getElementById("openSidebarBtn");
 const closeSidebarBtn = document.getElementById("closeSidebar");
@@ -213,7 +199,6 @@ openSidebarBtn.addEventListener("click", () => {
   sidebar.classList.add("active");
   openSidebarBtn.classList.add("hidden");
 });
-
 closeSidebarBtn.addEventListener("click", () => {
   sidebar.classList.remove("active");
   openSidebarBtn.classList.remove("hidden");
