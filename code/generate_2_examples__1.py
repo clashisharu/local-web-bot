@@ -16,4 +16,4 @@ if result == None :                  # To avoid any error in case of incorrect i
 elif type(result) != int and not isinstance(result , float):     
        print('Invalid Input')         # If result variable contains non integer or none value then show error message to user
 else : 
-    print ("The factorial of",num ,"is: ", result )           # Else calculate the Factorial.
+    print ("The factorial of",num ,"is: ", result )           # Else calculate the 

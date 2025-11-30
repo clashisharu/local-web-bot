@@ -22,6 +22,73 @@ def list_models():
 def get_models():
     return jsonify({"models": list_models()})
 
+@app.route("/create_file", methods=["POST"])
+def create_file():
+    data = request.get_json()
+    filename = data.get("filename")
+    content = data.get("content", "")
+    if not filename:
+        return jsonify({"error": "Filename required"}), 400
+
+    filepath = os.path.join(CODE_DIR, filename)
+    try:
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(content)
+        return jsonify({"message": f"File {filename} created successfully"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/update_file", methods=["POST"])
+def update_file():
+    data = request.get_json()
+    filename = data.get("filename")
+    content = data.get("content")
+    if not filename:
+        return jsonify({"error": "Filename required"}), 400
+
+    filepath = os.path.join(CODE_DIR, filename)
+    if not os.path.exists(filepath):
+        return jsonify({"error": "File not found"}), 404
+
+    try:
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(content)
+        return jsonify({"message": f"File {filename} updated successfully"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/delete_file", methods=["POST"])
+def delete_file():
+    data = request.get_json()
+    filename = data.get("filename")
+    if not filename:
+        return jsonify({"error": "Filename required"}), 400
+
+    filepath = os.path.join(CODE_DIR, filename)
+    if not os.path.exists(filepath):
+        return jsonify({"error": "File not found"}), 404
+
+    try:
+        os.remove(filepath)
+        return jsonify({"message": f"File {filename} deleted successfully"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/file_content", methods=["GET"])
+def file_content():
+    filename = request.args.get("filename")
+    filepath = os.path.join(CODE_DIR, filename)
+    if not os.path.exists(filepath):
+        return jsonify({"error": "File not found"}), 404
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            content = f.read()
+        return jsonify({"filename": filename, "content": content})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 def load_model_for_session(session_id: str, model_name: str):
     """Load model and create isolated chat session for a given session_id."""
     with SESSIONS_LOCK:

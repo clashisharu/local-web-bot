@@ -13,6 +13,39 @@
       <button id="openSidebarBtn">☰ File Manager</button>
     </div>
 
+    <!-- IDE Popup -->
+<div id="idePopup" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span id="closeIdePopup" class="close-btn">×</span>
+      <h3 id="ideFilename"></h3>
+      
+      <button id="deleteFileBtn">Delete</button>
+    </div>
+    <textarea id="ideEditor"></textarea>
+    <div class="modal-actions">
+      <button id="saveFileBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- New File Popup -->
+<div id="newFilePopup" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span id="closeNewFilePopup" class="close-btn">×</span>
+      <h3>Create New File</h3>
+    </div>
+    <input id="newFilename" placeholder="Filename.ext" />
+    <textarea id="newFileContent" placeholder="File content..."></textarea>
+    <div class="modal-actions">
+      <button id="createFileBtn">Create</button>
+    </div>
+  </div>
+</div>
+
+
+
   <!-- Sidebar -->
   <aside id="sidebar" class="sidebar">
     <div class="sidebar-header">
@@ -22,8 +55,10 @@
 
     <div class="sidebar-controls">
       <button id="refreshFiles">Refresh Files</button>
+      <button id="newFileBtn">New File</button>
       <ul id="fileList"></ul>
     </div>
+
 
     <div class="sidebar-output">
       <h3>Execution Output</h3>

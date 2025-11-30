@@ -153,16 +153,53 @@ function refreshFiles() {
         data.files.forEach(f => {
           const li = document.createElement("li");
           li.textContent = `${f.name} (${f.size} bytes)`;
+          // Add a line break
+          li.appendChild(document.createElement("br"));
+
+          // Run button
           const runBtn = document.createElement("button");
           runBtn.textContent = "Run";
           runBtn.style.marginLeft = "0.5rem";
           runBtn.addEventListener("click", () => runFile(f.name));
           li.appendChild(runBtn);
+
+          // Open IDE button
+          const ideBtn = document.createElement("button");
+          ideBtn.textContent = "Open";
+          ideBtn.style.marginLeft = "0.5rem";
+          ideBtn.addEventListener("click", () => openIde(f.name));
+          li.appendChild(ideBtn);
+
           fileList.appendChild(li);
         });
       }
     });
 }
+
+// IDE popup logic
+const idePopup = document.getElementById("idePopup");
+const ideEditor = document.getElementById("ideEditor");
+const ideFilename = document.getElementById("ideFilename");
+const closeIdePopup = document.getElementById("closeIdePopup");
+
+function openIde(filename) {
+  fetch(`/file_content?filename=${encodeURIComponent(filename)}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.error) {
+        alert("Error: " + data.error);
+        return;
+      }
+      ideFilename.textContent = data.filename;
+      ideEditor.value = data.content;
+      idePopup.classList.remove("hidden");
+    });
+}
+
+closeIdePopup.addEventListener("click", () => {
+  idePopup.classList.add("hidden");
+});
+
 refreshFiles();
 
 function renderExecutionResult({ stdout = "", stderr = "", returncode }, filename) {
@@ -202,4 +239,78 @@ openSidebarBtn.addEventListener("click", () => {
 closeSidebarBtn.addEventListener("click", () => {
   sidebar.classList.remove("active");
   openSidebarBtn.classList.remove("hidden");
+});
+
+// --- IDE popup actions ---
+const saveFileBtn = document.getElementById("saveFileBtn");
+const deleteFileBtn = document.getElementById("deleteFileBtn");
+
+saveFileBtn.addEventListener("click", () => {
+  const filename = ideFilename.textContent;
+  const content = ideEditor.value;
+  fetch("/update_file", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ filename, content })
+  })
+    .then(res => res.json())
+    .then(data => {
+      alert(data.message || data.error);
+      refreshFiles();
+      idePopup.classList.add("hidden");
+    });
+});
+
+deleteFileBtn.addEventListener("click", () => {
+  const filename = ideFilename.textContent;
+  if (!confirm(`Delete ${filename}?`)) return;
+  fetch("/delete_file", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ filename })
+  })
+    .then(res => res.json())
+    .then(data => {
+      alert(data.message || data.error);
+      refreshFiles();
+      idePopup.classList.add("hidden");
+    });
+});
+
+// --- New File popup actions ---
+const newFilePopup = document.getElementById("newFilePopup");
+const newFileBtn = document.getElementById("newFileBtn");
+const closeNewFilePopup = document.getElementById("closeNewFilePopup");
+const createFileBtn = document.getElementById("createFileBtn");
+const newFilename = document.getElementById("newFilename");
+const newFileContent = document.getElementById("newFileContent");
+
+newFileBtn.addEventListener("click", () => {
+  newFilename.value = "";
+  newFileContent.value = "";
+  newFilePopup.classList.remove("hidden");
+});
+
+closeNewFilePopup.addEventListener("click", () => {
+  newFilePopup.classList.add("hidden");
+});
+
+createFileBtn.addEventListener("click", () => {
+  const filename = newFilename.value.trim();
+  const content = newFileContent.value;
+  if (!filename) {
+    alert("Filename required");
+    return;
+  }
+  fetch("/create_file", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ filename, content })
+  })
+    .then(res => res.json())
+    .then(data => {
+      alert(data.message || data.error);
+      refreshFiles();
+      newFilePopup.classList.add("hidden");
+    });
 });
