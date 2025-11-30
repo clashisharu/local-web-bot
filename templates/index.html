@@ -7,8 +7,19 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
 </head>
 <body>
-  <div class="container">
+ <div class="container">
     <h1>GPT4All Chat</h1>
+
+    <div class="model-select">
+      <label for="modelDropdown">Choose Model:</label>
+      <select id="modelDropdown"></select>
+      <button id="loadModelBtn">Load Model</button>
+    </div>
+    
+    <div class="status-div">
+      <div class="status-label">Status:</div>
+      <div id="status">Not Selected</div>
+    </div>
 
     <div id="chat-window"></div>
 
@@ -24,11 +35,9 @@
     </div>
   </div>
 
-  <!-- include JS libraries in your HTML -->
+  <!-- include JS libraries -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-
-  
   <script src="./static/app.js"></script>
 </body>
 </html>
