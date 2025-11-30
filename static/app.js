@@ -138,3 +138,83 @@ chatForm.addEventListener("submit", (e) => {
     eventSource.close();
   };
 });
+
+
+const fileList = document.getElementById("fileList");
+const refreshFilesBtn = document.getElementById("refreshFiles");
+const commandInput = document.getElementById("commandInput");
+const runCommandBtn = document.getElementById("runCommandBtn");
+const commandOutput = document.getElementById("commandOutput");
+
+function refreshFiles() {
+  fetch("/files")
+    .then(res => res.json())
+    .then(data => {
+      fileList.innerHTML = "";
+      if (data.files) {
+        data.files.forEach(f => {
+          const li = document.createElement("li");
+          li.textContent = `${f.name} (${f.size} bytes)`;
+
+          const runBtn = document.createElement("button");
+          runBtn.textContent = "Run";
+          runBtn.style.marginLeft = "0.5rem";
+          runBtn.addEventListener("click", () => runFile(f.name));
+
+          li.appendChild(runBtn);
+          fileList.appendChild(li);
+        });
+      }
+    });
+}
+
+refreshFiles();
+
+function renderExecutionResult({ stdout = "", stderr = "", returncode }, filename) {
+  const ts = new Date().toLocaleString();
+  const isError = !!stderr.trim() || returncode !== 0;
+
+  // Build formatted text with explicit sections
+  const text =
+    `Running: ${filename}\n` +
+    `Time: ${ts}\n` +
+    `\nSTDOUT:\n${stdout || "(no output)"}\n` +
+    `\nSTDERR:\n${stderr || "(no errors)"}\n` +
+    `\nReturn code: ${returncode}\n`;
+
+  // Apply class for success or error
+  commandOutput.classList.toggle("exec-error", isError);
+  commandOutput.classList.toggle("exec-success", !isError);
+
+  // Write the text
+  commandOutput.textContent = text;
+}
+
+function runFile(filename) {
+  commandOutput.textContent = `Running file: ${filename}...\n`;
+  fetch("/run_file", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ filename })
+  })
+    .then(res => res.json())
+    .then(data => {
+      renderExecutionResult(data, filename);
+    });
+}
+
+
+refreshFilesBtn.addEventListener("click", refreshFiles);
+const sidebar = document.getElementById("sidebar");
+const openSidebarBtn = document.getElementById("openSidebarBtn");
+const closeSidebarBtn = document.getElementById("closeSidebar");
+
+openSidebarBtn.addEventListener("click", () => {
+  sidebar.classList.add("active");
+  openSidebarBtn.classList.add("hidden");
+});
+
+closeSidebarBtn.addEventListener("click", () => {
+  sidebar.classList.remove("active");
+  openSidebarBtn.classList.remove("hidden");
+});

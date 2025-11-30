@@ -1,6 +1,8 @@
 from gpt4all import GPT4All
 from flask import Flask, Response, request, render_template, jsonify, stream_with_context
-import os, re, base64
+import os, re, base64, subprocess
+
+CODE_DIR = "code"
 
 app = Flask(__name__)
 
@@ -8,6 +10,63 @@ MODEL_DIR = r"D:\projects\GPT4ALL\models"
 
 current_model = None
 chat_session = None
+
+@app.route("/files", methods=["GET"])
+def list_files():
+    try:
+        if not os.path.exists(CODE_DIR):
+            return jsonify({"files": []})
+        files = []
+        for f in os.listdir(CODE_DIR):
+            path = os.path.join(CODE_DIR, f)
+            if os.path.isfile(path):
+                files.append({
+                    "name": f,
+                    "size": os.path.getsize(path),
+                    "modified": os.path.getmtime(path)
+                })
+        return jsonify({"files": files})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/run_file", methods=["POST"])
+def run_file():
+    data = request.get_json()
+    filename = data.get("filename")
+    if not filename:
+        return jsonify({"error": "No filename provided"}), 400
+
+    filepath = os.path.join(CODE_DIR, filename)
+    if not os.path.exists(filepath):
+        return jsonify({"error": "File not found"}), 404
+
+    try:
+        # Decide interpreter based on extension
+        ext = os.path.splitext(filename)[1].lower()
+        if ext == ".py":
+            cmd = ["python", filepath]
+        elif ext == ".js":
+            cmd = ["node", filepath]
+        elif ext == ".sh":
+            cmd = ["bash", filepath]
+        elif ext == ".java":
+            # compile + run
+            cmd = ["javac", filepath]
+            subprocess.run(cmd, capture_output=True, text=True)
+            cmd = ["java", os.path.splitext(filename)[0]]
+        else:
+            return jsonify({"error": f"Unsupported file type: {ext}"}), 400
+
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        return jsonify({
+            "stdout": result.stdout,
+            "stderr": result.stderr,
+            "returncode": result.returncode
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 # --- Utility: list models ---
 def list_models():

@@ -7,7 +7,33 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
 </head>
 <body>
- <div class="container">
+  
+  <!-- Toggle sidebar button -->
+   <div id="toggleSidebar" class="toggle-sidebar-btn">
+      <button id="openSidebarBtn">☰ File Manager</button>
+    </div>
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <h2>File Manager</h2>
+      <button id="closeSidebar" class="close-btn">×</button>
+    </div>
+
+    <div class="sidebar-controls">
+      <button id="refreshFiles">Refresh Files</button>
+      <ul id="fileList"></ul>
+    </div>
+
+    <div class="sidebar-output">
+      <h3>Execution Output</h3>
+      <pre id="commandOutput"></pre>
+    </div>
+  </aside>
+
+
+  <!-- Main Chat Container -->
+  <div class="container">
     <h1>GPT4All Chat</h1>
 
     <div class="model-select">

@@ -174,3 +174,242 @@ pre code {
   overflow-x: auto;
   white-space: pre-wrap;
 }
+
+/* Sidebar layout */
+/* Sidebar off-canvas */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -360px; /* hidden initially */
+  width: 360px;
+  height: 100%;
+  background: #1c1c1c;
+  color: #eee;
+  display: flex;
+  flex-direction: column;
+  transition: left 0.3s ease;
+  z-index: 1000;
+  border-right: 2px solid #333;
+  box-sizing: border-box;
+  padding: 0.5rem;
+}
+
+/* Active state slides in */
+.sidebar.active {
+  left: 0;
+}
+
+/* Header section stays fixed height */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 0 auto; /* do not grow/shrink */
+}
+
+/* Square close button */
+.close-btn {
+  width: 32px;
+  height: 32px;
+  background: #333;
+  border: none;
+  border-radius: 4px;
+  color: #eee;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.close-btn:hover {
+  background: #444;
+}
+
+/* Controls section (file list, refresh) */
+.sidebar-controls {
+  flex: 1;                /* take equal space in sidebar */
+  display: flex;          /* stack children vertically */
+  flex-direction: column;
+  padding-top: 1rem;
+  overflow: hidden;       /* prevent double scrollbars */
+}
+
+/* Refresh button stays fixed height */
+.sidebar-controls button {
+  flex: 0 0 auto;
+}
+
+/* File list fills remaining space */
+.sidebar-controls ul {
+  flex: 1;                /* take remaining height */
+  overflow-y: auto;       /* scroll if too many files */
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+}
+.sidebar-controls ul li {
+  padding: 0.5rem;
+  background: #2a2a2a;
+  margin-bottom: 0.4rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.sidebar-controls ul li:hover {
+  background: #333;
+}
+
+
+/* Output section shares equal space */
+.sidebar-output {
+  flex: 1;                /* already shares equal space with controls */
+  display: flex;          /* make it a flex container */
+  flex-direction: column; /* stack heading and pre vertically */
+  border-top: 1px solid #333;
+  padding-top: 0.5rem;
+  overflow: hidden;       /* prevent double scrollbars */
+}
+
+.sidebar-output h3 {
+  margin: 0.5rem 0;
+  color: #00c853;
+  flex: 0 0 auto;         /* heading stays fixed height */
+}
+
+.sidebar-output pre {
+  flex: 1;                /* take all remaining height */
+  overflow-y: auto;       /* scroll if content exceeds */
+  background: #111;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+  line-height: 1.4;
+  color: #f8f8f2;
+}
+
+
+/* Toggle button fixed top-left */
+.toggle-sidebar-btn {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1101;
+}
+
+/* Button styling */
+#openSidebarBtn {
+  background: #00c853;
+  color: #111;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+#openSidebarBtn:hover {
+  background: #00e676;
+}
+
+/* Headings inside sidebar */
+.sidebar h2, .sidebar h3 {
+  margin: 0.5rem 0;
+  color: #00c853;
+  font-weight: 600;
+}
+
+/* Buttons inside sidebar */
+.sidebar button {
+  margin: 0.5rem 0;
+  padding: 0.6rem;
+  border: none;
+  border-radius: 6px;
+  background: #00c853;
+  color: #111;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.sidebar button:hover {
+  background: #00e676;
+}
+
+/* File list */
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+}
+.sidebar ul li {
+  padding: 0.5rem;
+  background: #2a2a2a;
+  margin-bottom: 0.4rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.sidebar ul li:hover {
+  background: #333;
+}
+
+/* Inputs inside sidebar */
+.sidebar input {
+  width: 100%;
+  padding: 0.6rem;
+  margin: 0.4rem 0;
+  border-radius: 6px;
+  border: none;
+  background: #222;
+  color: #eee;
+}
+
+/* Hidden utility */
+.hidden {
+  display: none !important;
+}
+
+/* Execution output states */
+#commandOutput {
+  background: #111;
+  color: #f8f8f2;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+  line-height: 1.4;
+  border: 1px solid #333;
+}
+
+.exec-success {
+  border-color: #00c853;
+  box-shadow: 0 0 0 2px rgba(0, 200, 83, 0.15);
+}
+
+.exec-error {
+  border-color: #ff5252;
+  box-shadow: 0 0 0 2px rgba(255, 82, 82, 0.15);
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 80%;
+  }
+  #openSidebarBtn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    width: 100%;
+  }
+  .toggle-sidebar-btn {
+    top: 0.5rem;
+    left: 0.5rem;
+  }
+}
